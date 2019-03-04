@@ -2,20 +2,20 @@ package org.codehaus.mojo.properties;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file 
+ * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, 
+ *
+ * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
- * KIND, either express or implied.  See the License for the 
- * specific language governing permissions and limitations 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
  * under the License.
  */
 
@@ -29,13 +29,13 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 
 /**
@@ -51,8 +51,12 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 public class ReadPropertiesMojo
     extends AbstractMojo
 {
-    @Parameter( defaultValue = "${project}", readonly = true, required = true )
-    private MavenProject project;
+
+    /**
+     *
+     */
+    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    protected MavenSession session;
 
     /**
      * The properties files that will be used when reading properties.
@@ -86,7 +90,7 @@ public class ReadPropertiesMojo
 
     /**
      * Default scope for test access.
-     * 
+     *
      * @param urls The URLs to set for tests.
      */
     public void setUrls( String[] urls )
@@ -194,15 +198,15 @@ public class ReadPropertiesMojo
                 {
                     Properties properties = new Properties();
                     properties.load(stream);
-                    Properties projectProperties = project.getProperties();
+                    Properties userProperties = session.getUserProperties();
                     for(String key: properties.stringPropertyNames())
                     {
-                        projectProperties.put(keyPrefix + key, properties.get(key));
+                        userProperties.put(keyPrefix + key, properties.get(key));
                     }
                 }
                 else
                 {
-                    project.getProperties().load( stream );
+                    session.getUserProperties().load( stream );
                 }
             }
             finally
@@ -233,25 +237,25 @@ public class ReadPropertiesMojo
         throws MojoExecutionException, MojoFailureException
     {
         Properties environment = loadSystemEnvironmentPropertiesWhenDefined();
-        Properties projectProperties = project.getProperties();
+        Properties userProperties = session.getUserProperties();
 
-        for ( Enumeration<?> n = projectProperties.propertyNames(); n.hasMoreElements(); )
+        for ( Enumeration<?> n = userProperties.propertyNames(); n.hasMoreElements(); )
         {
             String k = (String) n.nextElement();
-            projectProperties.setProperty( k, getPropertyValue( k, projectProperties, environment ) );
+            userProperties.setProperty( k, getPropertyValue( k, userProperties, environment ) );
         }
     }
 
     private Properties loadSystemEnvironmentPropertiesWhenDefined()
         throws MojoExecutionException
     {
-        Properties projectProperties = project.getProperties();
+        Properties userProperties = session.getUserProperties();
 
         boolean useEnvVariables = false;
-        for ( Enumeration<?> n = projectProperties.propertyNames(); n.hasMoreElements(); )
+        for ( Enumeration<?> n = userProperties.propertyNames(); n.hasMoreElements(); )
         {
             String k = (String) n.nextElement();
-            String p = (String) projectProperties.get( k );
+            String p = (String) userProperties.get( k );
             if ( p.indexOf( "${env." ) != -1 )
             {
                 useEnvVariables = true;
@@ -288,7 +292,7 @@ public class ReadPropertiesMojo
 
     /**
      * Override-able for test purposes.
-     * 
+     *
      * @return The shell environment variables, can be empty but never <code>null</code>.
      * @throws IOException If the environment variables could not be queried from the shell.
      */
@@ -300,7 +304,7 @@ public class ReadPropertiesMojo
 
     /**
      * Default scope for test access.
-     * 
+     *
      * @param quiet Set to <code>true</code> if missing files can be skipped.
      */
     void setQuiet( boolean quiet )
@@ -310,12 +314,12 @@ public class ReadPropertiesMojo
 
     /**
      * Default scope for test access.
-     * 
-     * @param project The test project.
+     *
+     * @param session The test session.
      */
-    void setProject( MavenProject project )
+    void setSession( MavenSession session )
     {
-        this.project = project;
+        this.session = session;
     }
 
     private static abstract class Resource

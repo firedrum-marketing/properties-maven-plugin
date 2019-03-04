@@ -24,17 +24,16 @@
   <parent>
     <artifactId>mojo-parent</artifactId>
     <groupId>org.codehaus.mojo</groupId>
-    <version>38</version>
+    <version>40</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.codehaus.mojo</groupId>
   <artifactId>properties-maven-plugin</artifactId>
   <version>1.0.1-SNAPSHOT</version>
 
   <name>Properties Maven Plugin</name>
-  <description> 
+  <description>
     The Properties Maven Plugin is here to make life a little easier when dealing
     with properties. It provides goals to read and write properties from files.
   </description>
@@ -54,12 +53,14 @@
   </licenses>
 
   <prerequisites>
-    <maven>2.2.1</maven>
+    <maven>${maven.api.version}</maven>
   </prerequisites>
 
   <properties>
-    <maven.api.version>2.2.1</maven.api.version>
-    <mojo.java.target>1.5</mojo.java.target>
+    <maven.api.version>3.3.9</maven.api.version>
+    <maven.annotations.version>3.3</maven.annotations.version>
+    <plexus.utils.version>3.0.22</plexus.utils.version>
+    <mojo.java.target>1.6</mojo.java.target>
     <scmpublish.content>target/staging/${project.artifactId}</scmpublish.content>
   </properties>
 
@@ -100,22 +101,23 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${maven.api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
       <version>${maven.api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
       <version>${maven.api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-utils</artifactId>
-      <version>3.0.22</version>
+      <version>${plexus.utils.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -126,6 +128,7 @@
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
+      <version>${maven.annotations.version}</version>
       <scope>provided</scope>
     </dependency>
 

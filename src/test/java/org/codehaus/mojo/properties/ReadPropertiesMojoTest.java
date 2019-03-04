@@ -1,6 +1,6 @@
 package org.codehaus.mojo.properties;
 
-import org.apache.maven.project.MavenProject;
+import org.apache.maven.execution.MavenSession;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,14 +17,15 @@ import static org.junit.Assert.assertNotNull;
 public class ReadPropertiesMojoTest {
     private static final String NEW_LINE = System.getProperty("line.separator");
 
-    private MavenProject projectStub;
+    private MavenSession sessionStub;
     private ReadPropertiesMojo readPropertiesMojo;
 
-    @Before
+    @SuppressWarnings( "deprecation" )
+	@Before
     public void setUp() {
-        projectStub = new MavenProject();
+        sessionStub = new MavenSession(null,null,null,null,null,null,null,null,new Properties(),null);
         readPropertiesMojo = new ReadPropertiesMojo();
-        readPropertiesMojo.setProject(projectStub);
+        readPropertiesMojo.setSession(sessionStub);
     }
 
 
@@ -40,14 +41,14 @@ public class ReadPropertiesMojoTest {
         readPropertiesMojo.execute();
 
         // check results
-        Properties projectProperties = projectStub.getProperties();
-        assertNotNull(projectProperties);
+        Properties userProperties = sessionStub.getUserProperties();
+        assertNotNull(userProperties);
         // it should not be empty
-        assertNotEquals(0, projectProperties.size());
+        assertNotEquals(0, userProperties.size());
 
         // we are not adding prefix, so properties should be same as in file
-        assertEquals(testProperties.size(), projectProperties.size());
-        assertEquals(testProperties, projectProperties);
+        assertEquals(testProperties.size(), userProperties.size());
+        assertEquals(testProperties, userProperties);
 
     }
 
@@ -68,18 +69,18 @@ public class ReadPropertiesMojoTest {
         testPropertiesPrefix.load(new FileReader(getPropertyFileForTesting(keyPrefix)));
 
         // check results
-        Properties projectProperties = projectStub.getProperties();
-        assertNotNull(projectProperties);
+        Properties userProperties = sessionStub.getUserProperties();
+        assertNotNull(userProperties);
         // it should not be empty
-        assertNotEquals(0, projectProperties.size());
+        assertNotEquals(0, userProperties.size());
 
         // we are adding prefix, so prefix properties should be same as in projectProperties
-        assertEquals(testPropertiesPrefix.size(), projectProperties.size());
-        assertEquals(testPropertiesPrefix, projectProperties);
+        assertEquals(testPropertiesPrefix.size(), userProperties.size());
+        assertEquals(testPropertiesPrefix, userProperties);
 
         // properties with and without prefix shouldn't be same
         assertNotEquals(testPropertiesPrefix, testPropertiesWithoutPrefix);
-        assertNotEquals(testPropertiesWithoutPrefix, projectProperties);
+        assertNotEquals(testPropertiesWithoutPrefix, userProperties);
 
     }
 
