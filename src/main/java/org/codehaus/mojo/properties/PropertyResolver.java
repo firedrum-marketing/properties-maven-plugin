@@ -26,9 +26,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 class PropertyResolver
 {
 
-    @Parameter(defaultValue = "${project.properties}", readonly = true, required = true)
-    private Properties projectProperties;
-
     /**
      * Retrieves a property value, replacing values like ${token} using the Properties to look them up. Shamelessly
      * adapted from:
@@ -38,12 +35,13 @@ class PropertyResolver
      * test = ${test}
      *
      * @param key property key
-     * @param properties project properties
+     * @param properties session properties
+     * @param projectProperties project properties
      * @param environment environment variables
      * @return resolved property value
      * @throws IllegalArgumentException when properties are circularly defined
      */
-    public String getPropertyValue( String key, Properties properties, Properties environment )
+    public String getPropertyValue( String key, Properties properties, Properties projectProperties, Properties environment )
     {
         String value = properties.getProperty( key );
 
@@ -55,7 +53,7 @@ class PropertyResolver
         while ( buffer.hasMoreLegalPlaceholders() )
         {
             String newKey = buffer.extractPropertyKey();
-            String newValue = fromPropertiesThenSystemThenEnvironment( newKey, properties, environment );
+            String newValue = fromPropertiesThenSystemThenEnvironment( newKey, properties, projectProperties, environment );
 
             circularDefinitionPreventer.visited( newKey, newValue );
 
@@ -65,7 +63,7 @@ class PropertyResolver
         return buffer.toString();
     }
 
-    private String fromPropertiesThenSystemThenEnvironment( String key, Properties properties, Properties environment )
+    private String fromPropertiesThenSystemThenEnvironment( String key, Properties properties, Properties projectProperties, Properties environment )
     {
         String value = properties.getProperty( key );
 

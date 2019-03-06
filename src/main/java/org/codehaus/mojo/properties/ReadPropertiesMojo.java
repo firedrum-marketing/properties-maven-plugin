@@ -61,6 +61,10 @@ public class ReadPropertiesMojo
     @Parameter( defaultValue = "${session}", readonly = true, required = true )
     protected MavenSession session;
 
+
+    @Parameter( defaultValue = "${project.properties}", readonly = true, required = true )
+    private Properties projectProperties;
+
     /**
      * The properties files that will be used when reading properties.
      */
@@ -359,7 +363,7 @@ public class ReadPropertiesMojo
     {
         try
         {
-            return resolver.getPropertyValue( k, p, environment );
+            return resolver.getPropertyValue( k, p, projectProperties, environment );
         }
         catch ( IllegalArgumentException e )
         {

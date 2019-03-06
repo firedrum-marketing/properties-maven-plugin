@@ -41,8 +41,8 @@ public class PropertyResolverTest
         properties.setProperty( "p1", "${p2}" );
         properties.setProperty( "p2", "value" );
 
-        String value1 = resolver.getPropertyValue( "p1", properties, new Properties() );
-        String value2 = resolver.getPropertyValue( "p2", properties, new Properties() );
+        String value1 = resolver.getPropertyValue( "p1", properties, new Properties(), new Properties() );
+        String value2 = resolver.getPropertyValue( "p2", properties, new Properties(), new Properties() );
 
         assertEquals( "value", value1 );
         assertEquals( "value", value2 );
@@ -57,9 +57,9 @@ public class PropertyResolverTest
         properties.setProperty( "p2", "value" );
         properties.setProperty( "p3", "${unknown}" );
 
-        String value1 = resolver.getPropertyValue( "p1", properties, new Properties() );
-        String value2 = resolver.getPropertyValue( "p2", properties, new Properties() );
-        String value3 = resolver.getPropertyValue( "p3", properties, new Properties() );
+        String value1 = resolver.getPropertyValue( "p1", properties, new Properties(), new Properties() );
+        String value2 = resolver.getPropertyValue( "p2", properties, new Properties(), new Properties() );
+        String value3 = resolver.getPropertyValue( "p3", properties, new Properties(), new Properties() );
 
         assertEquals( "value", value1 );
         assertEquals( "value", value2 );
@@ -75,7 +75,7 @@ public class PropertyResolverTest
         properties.setProperty( "port", "8080" );
         properties.setProperty( "base.url", "http://${hostname}:${port}/" );
 
-        String value = resolver.getPropertyValue( "base.url", properties, new Properties() );
+        String value = resolver.getPropertyValue( "base.url", properties, new Properties(), new Properties() );
 
         assertEquals( "http://localhost:8080/", value );
     }
@@ -88,7 +88,7 @@ public class PropertyResolverTest
         properties.setProperty( "p1", "value" );
         properties.setProperty( "p2", "${p1} ${p1}" );
 
-        String value = resolver.getPropertyValue( "p2", properties, new Properties() );
+        String value = resolver.getPropertyValue( "p2", properties, new Properties(), new Properties() );
 
         assertEquals( "value value", value );
     }
@@ -102,9 +102,9 @@ public class PropertyResolverTest
         properties.setProperty( "p2", "value" );
         properties.setProperty( "p4", "${malformed" );
 
-        String value1 = resolver.getPropertyValue( "p1", properties, new Properties() );
-        String value2 = resolver.getPropertyValue( "p2", properties, new Properties() );
-        String value4 = resolver.getPropertyValue( "p4", properties, new Properties() );
+        String value1 = resolver.getPropertyValue( "p1", properties, new Properties(), new Properties() );
+        String value2 = resolver.getPropertyValue( "p2", properties, new Properties(), new Properties() );
+        String value4 = resolver.getPropertyValue( "p4", properties, new Properties(), new Properties() );
 
         assertEquals( "value", value1 );
         assertEquals( "value", value2 );
@@ -122,12 +122,12 @@ public class PropertyResolverTest
         properties.setProperty( "p6", "${p7}" );
         properties.setProperty( "p7", "${p6}" );
 
-        String value1 = resolver.getPropertyValue( "p1", properties, new Properties() );
-        String value2 = resolver.getPropertyValue( "p2", properties, new Properties() );
+        String value1 = resolver.getPropertyValue( "p1", properties, new Properties(), new Properties() );
+        String value2 = resolver.getPropertyValue( "p2", properties, new Properties(), new Properties() );
         String value5 = null;
         try
         {
-            value5 = resolver.getPropertyValue( "p5", properties, new Properties() );
+            value5 = resolver.getPropertyValue( "p5", properties, new Properties(), new Properties() );
             fail();
         }
         catch ( IllegalArgumentException e )
@@ -137,7 +137,7 @@ public class PropertyResolverTest
         String value6 = null;
         try
         {
-            value6 = resolver.getPropertyValue( "p6", properties, new Properties() );
+            value6 = resolver.getPropertyValue( "p6", properties, new Properties(), new Properties() );
             fail();
         }
         catch ( IllegalArgumentException e )
@@ -161,7 +161,7 @@ public class PropertyResolverTest
 
         String value = null;
         try {
-            value = resolver.getPropertyValue( "p2", properties, new Properties() );
+            value = resolver.getPropertyValue( "p2", properties, new Properties(), new Properties() );
         } catch (IllegalArgumentException e) {
             assertThat( e.getMessage(), containsString("p1"));
             assertThat( e.getMessage(), containsString("p2"));
@@ -180,7 +180,7 @@ public class PropertyResolverTest
         Properties properties = new Properties();
         properties.setProperty( "p1", "${system.property}" );
 
-        String value = resolver.getPropertyValue( "p1", properties, new Properties() );
+        String value = resolver.getPropertyValue( "p1", properties, new Properties(), new Properties() );
 
         try
         {
@@ -202,7 +202,7 @@ public class PropertyResolverTest
         Properties properties = new Properties();
         properties.setProperty( "p1", "${env.PROPERTY}" );
 
-        String value = resolver.getPropertyValue( "p1", properties, environment );
+        String value = resolver.getPropertyValue( "p1", properties, new Properties(), environment );
 
         assertEquals( "env.value", value );
     }
@@ -210,6 +210,6 @@ public class PropertyResolverTest
     @Test
     public void missingPropertyIsTolerated()
     {
-        assertEquals( "", resolver.getPropertyValue( "non-existent", new Properties(), null ) );
+        assertEquals( "", resolver.getPropertyValue( "non-existent", new Properties(), new Properties(), null ) );
     }
 }
