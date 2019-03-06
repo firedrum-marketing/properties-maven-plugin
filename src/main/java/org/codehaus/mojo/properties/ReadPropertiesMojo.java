@@ -138,6 +138,12 @@ public class ReadPropertiesMojo
     private boolean quiet;
 
     /**
+     * Skip executing this plugin
+     */
+    @Parameter( defaultValue = "false" )
+    private boolean skip;
+
+    /**
      * Prefix that will be added before name of each property.
      * Can be useful for separating properties with same name from different files.
      */
@@ -158,6 +164,11 @@ public class ReadPropertiesMojo
     public void execute()
         throws MojoExecutionException, MojoFailureException
     {
+        if ( skip ) {
+            getLog().info( "skipping" );
+            return;
+        }
+
         checkParameters();
 
         loadFiles();
