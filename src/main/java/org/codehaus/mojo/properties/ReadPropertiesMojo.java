@@ -147,6 +147,13 @@ public class ReadPropertiesMojo
     @Parameter( defaultValue = "false" )
     private boolean skip;
 
+
+    /**
+     * Skip property resolution from higher scopes
+     */
+    @Parameter( defaultValue = "false" )
+    private boolean skipResolution;
+
     /**
      * Prefix that will be added before name of each property.
      * Can be useful for separating properties with same name from different files.
@@ -181,7 +188,11 @@ public class ReadPropertiesMojo
 
         loadReadFiles();
 
-        resolveProperties();
+        if ( !skipResolution ) {
+            resolveProperties();
+        } else {
+            getLog().info( "skipping property resolution" );
+        }
     }
 
     private void checkParameters()
