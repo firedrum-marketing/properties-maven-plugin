@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -77,6 +80,28 @@ public class ReadPropertiesMojo
         {
             this.files = new File[files.length];
             System.arraycopy( files, 0, this.files, 0, files.length );
+        }
+    }
+
+    /**
+     * The files that will be read as properties.
+     */
+    @Parameter
+    private File[] readFiles = new File[0];
+
+    /**
+     * @param files The readFiles to set for tests.
+     */
+    public void setReadFiles( File[] readFiles )
+    {
+        if ( readFiles == null )
+        {
+            this.readFiles = new File[0];
+        }
+        else
+        {
+            this.readFiles = new File[readFiles.length];
+            System.arraycopy( readFiles, 0, this.readFiles, 0, readFiles.length );
         }
     }
 
@@ -139,6 +164,8 @@ public class ReadPropertiesMojo
 
         loadUrls();
 
+        loadReadFiles();
+
         resolveProperties();
     }
 
@@ -170,12 +197,34 @@ public class ReadPropertiesMojo
         }
     }
 
+    private void loadReadFiles()
+        throws MojoExecutionException
+    {
+        for ( int i = 0; i < readFiles.length; i++ )
+        {
+            loadAsProperty( new FileResource( readFiles[i] ) );
+        }
+    }
+
     private void load( Resource resource )
         throws MojoExecutionException
     {
         if ( resource.canBeOpened() )
         {
             loadProperties( resource );
+        }
+        else
+        {
+            missing( resource );
+        }
+    }
+
+    private void loadAsProperty( FileResource resource )
+        throws MojoExecutionException
+    {
+        if ( resource.canBeOpened() )
+        {
+            loadIntoProperty( resource );
         }
         else
         {
@@ -197,11 +246,11 @@ public class ReadPropertiesMojo
                 if ( keyPrefix != null )
                 {
                     Properties properties = new Properties();
-                    properties.load(stream);
+                    properties.load( stream );
                     Properties userProperties = session.getUserProperties();
-                    for(String key: properties.stringPropertyNames())
+                    for ( String key : properties.stringPropertyNames() )
                     {
-                        userProperties.put(keyPrefix + key, properties.get(key));
+                        userProperties.put( keyPrefix + key, properties.get( key ) );
                     }
                 }
                 else
@@ -217,6 +266,23 @@ public class ReadPropertiesMojo
         catch ( IOException e )
         {
             throw new MojoExecutionException( "Error reading properties from " + resource, e );
+        }
+    }
+
+    private void loadIntoProperty( FileResource resource )
+        throws MojoExecutionException
+    {
+        try
+        {
+            final String propertyName = keyPrefix != null ? keyPrefix + resource.getName() : resource.getName();
+
+            getLog().debug( "Loading " + resource + " into property " + propertyName );
+
+            session.getUserProperties().put( propertyName, new String( Files.readAllBytes( resource.toPath() ), StandardCharsets.UTF_8 ) );
+        }
+        catch ( IOException e )
+        {
+            throw new MojoExecutionException( "Error reading from " + resource, e );
         }
     }
 
@@ -366,6 +432,16 @@ public class ReadPropertiesMojo
         public String toString()
         {
             return "File: " + file;
+        }
+
+        public String getName()
+        {
+            return file.getName();
+        }
+
+        public Path toPath()
+        {
+            return file.toPath();
         }
     }
 

@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -21,7 +24,7 @@ public class ReadPropertiesMojoTest {
     private ReadPropertiesMojo readPropertiesMojo;
 
     @SuppressWarnings( "deprecation" )
-	@Before
+    @Before
     public void setUp() {
         sessionStub = new MavenSession(null,null,null,null,null,null,null,null,new Properties(),null);
         readPropertiesMojo = new ReadPropertiesMojo();
@@ -82,6 +85,48 @@ public class ReadPropertiesMojoTest {
         assertNotEquals(testPropertiesPrefix, testPropertiesWithoutPrefix);
         assertNotEquals(testPropertiesWithoutPrefix, userProperties);
 
+    }
+
+    @Test
+    public void readAsPropertyWithoutKeyprefix() throws Exception {
+        File testPropertyFile = getPropertyFileForTesting();
+        // load file directly for comparison later
+        String testFile = new String( Files.readAllBytes( testPropertyFile.toPath() ), StandardCharsets.UTF_8 );
+
+        // do the work
+        readPropertiesMojo.setReadFiles(new File[]{testPropertyFile});
+        readPropertiesMojo.execute();
+
+        // check results
+        Properties userProperties = sessionStub.getUserProperties();
+        assertNotNull(userProperties);
+        // it should have one property
+        assertEquals(1, userProperties.size());
+
+        // property should be the same as file contents
+        assertEquals(testFile, userProperties.get( testPropertyFile.getName()));
+    }
+
+    @Test
+    public void readAsPropertyWithKeyprefix() throws Exception {
+        String keyPrefix = "testkey-prefix.";
+
+        File testPropertyFileWithoutPrefix = getPropertyFileForTesting();
+        // load file directly for comparison later
+        String testFileWithoutPrefix = new String( Files.readAllBytes( testPropertyFileWithoutPrefix.toPath() ), StandardCharsets.UTF_8 );
+        // do the work
+        readPropertiesMojo.setKeyPrefix(keyPrefix);
+        readPropertiesMojo.setReadFiles(new File[]{testPropertyFileWithoutPrefix});
+        readPropertiesMojo.execute();
+
+        // check results
+        Properties userProperties = sessionStub.getUserProperties();
+        assertNotNull(userProperties);
+        // it should have one property
+        assertEquals(1, userProperties.size());
+
+        // property should be the same as file contents
+        assertEquals(testFileWithoutPrefix, userProperties.get( keyPrefix + testPropertyFileWithoutPrefix.getName()));
     }
 
     private File getPropertyFileForTesting() throws IOException {
