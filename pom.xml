@@ -31,7 +31,7 @@
 
   <groupId>com.github.firedrum-marketing</groupId>
   <artifactId>properties-maven-plugin</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
 
   <name>Properties Maven Plugin</name>
   <description>
@@ -159,6 +159,13 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <trimStackTrace>false</trimStackTrace>
+        </configuration>
       </plugin>
     </plugins>
   </build>

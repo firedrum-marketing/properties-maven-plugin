@@ -21,8 +21,13 @@ package org.codehaus.mojo.properties;
 
 import java.util.Properties;
 
+import org.apache.maven.plugins.annotations.Parameter;
+
 class PropertyResolver
 {
+
+    @Parameter(defaultValue = "${project.properties}", readonly = true, required = true)
+    private Properties projectProperties;
 
     /**
      * Retrieves a property value, replacing values like ${token} using the Properties to look them up. Shamelessly
@@ -63,6 +68,12 @@ class PropertyResolver
     private String fromPropertiesThenSystemThenEnvironment( String key, Properties properties, Properties environment )
     {
         String value = properties.getProperty( key );
+
+        // try project properties
+        if ( value == null )
+        {
+            value = projectProperties.getProperty( key );
+        }
 
         // try global environment
         if ( value == null )
